@@ -3,6 +3,7 @@ import { useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { PromptGenerator } from "./PromptGenerator";
 import { Recorder } from "./Recorder";
+import { ScriptHelper } from "./ScriptHelper";
 import type { Id } from "../../convex/_generated/dataModel";
 
 type SessionStep = "prompt" | "record" | "review" | "complete";
