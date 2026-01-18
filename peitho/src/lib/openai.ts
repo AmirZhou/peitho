@@ -235,15 +235,145 @@ export interface TranscriptionResult {
   segments?: { start: number; end: number; text: string }[];
 }
 
+// Extract audio from video blob to reduce file size for Whisper
+async function extractAudioFromVideo(videoBlob: Blob): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const video = document.createElement("video");
+    const url = URL.createObjectURL(videoBlob);
+
+    video.onloadedmetadata = async () => {
+      try {
+        const audioContext = new AudioContext();
+        const response = await fetch(url);
+        const arrayBuffer = await response.arrayBuffer();
+
+        // Decode the audio from the video
+        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+
+        // Create offline context for rendering
+        const offlineContext = new OfflineAudioContext(
+          audioBuffer.numberOfChannels,
+          audioBuffer.length,
+          audioBuffer.sampleRate
+        );
+
+        const source = offlineContext.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(offlineContext.destination);
+        source.start();
+
+        const renderedBuffer = await offlineContext.startRendering();
+
+        // Convert to WAV (more compatible with Whisper)
+        const wavBlob = audioBufferToWav(renderedBuffer);
+
+        URL.revokeObjectURL(url);
+        audioContext.close();
+        resolve(wavBlob);
+      } catch (err) {
+        URL.revokeObjectURL(url);
+        reject(err);
+      }
+    };
+
+    video.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("Failed to load video for audio extraction"));
+    };
+
+    video.src = url;
+  });
+}
+
+// Convert AudioBuffer to WAV blob
+function audioBufferToWav(buffer: AudioBuffer): Blob {
+  const numChannels = buffer.numberOfChannels;
+  const sampleRate = buffer.sampleRate;
+  const format = 1; // PCM
+  const bitDepth = 16;
+
+  const bytesPerSample = bitDepth / 8;
+  const blockAlign = numChannels * bytesPerSample;
+
+  const dataLength = buffer.length * blockAlign;
+  const bufferLength = 44 + dataLength;
+
+  const arrayBuffer = new ArrayBuffer(bufferLength);
+  const view = new DataView(arrayBuffer);
+
+  // Write WAV header
+  writeString(view, 0, "RIFF");
+  view.setUint32(4, bufferLength - 8, true);
+  writeString(view, 8, "WAVE");
+  writeString(view, 12, "fmt ");
+  view.setUint32(16, 16, true); // fmt chunk size
+  view.setUint16(20, format, true);
+  view.setUint16(22, numChannels, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * blockAlign, true);
+  view.setUint16(32, blockAlign, true);
+  view.setUint16(34, bitDepth, true);
+  writeString(view, 36, "data");
+  view.setUint32(40, dataLength, true);
+
+  // Write audio data
+  const channels: Float32Array[] = [];
+  for (let i = 0; i < numChannels; i++) {
+    channels.push(buffer.getChannelData(i));
+  }
+
+  let offset = 44;
+  for (let i = 0; i < buffer.length; i++) {
+    for (let ch = 0; ch < numChannels; ch++) {
+      const sample = Math.max(-1, Math.min(1, channels[ch][i]));
+      const intSample = sample < 0 ? sample * 0x8000 : sample * 0x7FFF;
+      view.setInt16(offset, intSample, true);
+      offset += 2;
+    }
+  }
+
+  return new Blob([arrayBuffer], { type: "audio/wav" });
+}
+
+function writeString(view: DataView, offset: number, str: string): void {
+  for (let i = 0; i < str.length; i++) {
+    view.setUint8(offset + i, str.charCodeAt(i));
+  }
+}
+
 // Transcribe audio using Whisper
 export async function transcribeAudio(
   apiKey: string,
-  audioBlob: Blob
+  mediaBlob: Blob
 ): Promise<TranscriptionResult> {
+  // Check file size - Whisper limit is 25MB
+  const MAX_SIZE = 25 * 1024 * 1024; // 25MB
+
+  let audioBlob = mediaBlob;
+
+  // If the blob is too large and is a video, try to extract just the audio
+  if (mediaBlob.size > MAX_SIZE && mediaBlob.type.startsWith("video/")) {
+    try {
+      audioBlob = await extractAudioFromVideo(mediaBlob);
+    } catch (err) {
+      console.warn("Failed to extract audio, using original:", err);
+      // Fall back to original blob
+    }
+  }
+
+  // If still too large, throw a helpful error
+  if (audioBlob.size > MAX_SIZE) {
+    throw new Error(
+      `Recording is too large (${(audioBlob.size / 1024 / 1024).toFixed(1)}MB). ` +
+      `Maximum size is 25MB. Try a shorter recording.`
+    );
+  }
+
   const formData = new FormData();
 
-  // Whisper expects a file, so we need to create one from the blob
-  const audioFile = new File([audioBlob], "recording.webm", {
+  // Whisper expects a file
+  const fileName = audioBlob.type.includes("wav") ? "recording.wav" : "recording.webm";
+  const audioFile = new File([audioBlob], fileName, {
     type: audioBlob.type || "audio/webm",
   });
 
