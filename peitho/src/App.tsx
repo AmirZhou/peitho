@@ -171,6 +171,14 @@ function App() {
 
       {/* Session Modal */}
       {showSession && <Session onClose={() => setShowSession(false)} />}
+
+      {/* Framework Detail Modal */}
+      {selectedFramework && (
+        <FrameworkDetail
+          framework={selectedFramework}
+          onClose={() => setSelectedFramework(null)}
+        />
+      )}
     </div>
   );
 }
