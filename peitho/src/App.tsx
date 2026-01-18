@@ -2,7 +2,19 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { useState } from "react";
 import { Session } from "./components/Session";
+import { FrameworkDetail } from "./components/FrameworkDetail";
 import "./App.css";
+
+interface Framework {
+  _id: string;
+  name: string;
+  description: string;
+  pattern: string;
+  examples: string[];
+  tags: string[];
+  source: string;
+  domain: string;
+}
 
 function App() {
   const frameworks = useQuery(api.frameworks.list);
