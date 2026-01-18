@@ -68,11 +68,87 @@ interface SessionCardProps {
 }
 
 function SessionCard({ session, expanded, onToggle }: SessionCardProps) {
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
+  const [feedbackError, setFeedbackError] = useState<string | null>(null);
+
+  const apiKey = useQuery(api.settings.getApiKey);
+  const sessionWithFrameworks = useQuery(
+    api.sessions.getWithFrameworks,
+    expanded ? { id: session._id } : "skip"
+  );
+  const saveFeedback = useMutation(api.sessions.saveFeedback);
+
   const formattedDate = new Date(session.date).toLocaleDateString("en-US", {
     weekday: "short",
     month: "short",
     day: "numeric",
   });
+
+  const parsedEvaluation: EvaluationResult | null = session.evaluation
+    ? JSON.parse(session.evaluation)
+    : null;
+
+  const handleGetFeedback = async () => {
+    if (!apiKey || session.recordingIds.length === 0) return;
+
+    setFeedbackLoading(true);
+    setFeedbackError(null);
+
+    try {
+      // Get the first recording URL
+      const recordingUrl = await fetch(
+        `https://cheery-ant-612.convex.cloud/api/storage/${session.recordingIds[0]}`
+      ).then(async (res) => {
+        // The storage URL redirects, get actual URL from Convex
+        return null; // We'll use the getRecordingUrl query instead
+      });
+
+      // Actually, let's use a simpler approach - fetch from the query
+      // We need to get the URL and then fetch the blob
+      const url = sessionWithFrameworks
+        ? await fetch("/api/getUrl?id=" + session.recordingIds[0])
+        : null;
+
+      // Simpler approach: use the existing URL from the page if visible
+      // For now, we'll need to fetch the blob from storage
+      // Let's build a helper that does this
+
+      // Get recording URL from Convex
+      const response = await fetch(
+        `https://cheery-ant-612.convex.cloud/api/storage/${session.recordingIds[0]}`
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch recording");
+      }
+
+      const audioBlob = await response.blob();
+
+      // Step 1: Transcribe
+      const transcription = await transcribeAudio(apiKey, audioBlob);
+
+      // Step 2: Evaluate
+      const frameworks = sessionWithFrameworks?.frameworks || [];
+      const evaluation = await evaluateTranscript(
+        apiKey,
+        transcription.text,
+        session.promptUsed,
+        frameworks.map((f) => ({ name: f?.name || "", pattern: f?.pattern || "" }))
+      );
+
+      // Step 3: Save to database
+      await saveFeedback({
+        id: session._id,
+        transcript: transcription.text,
+        evaluation: JSON.stringify(evaluation),
+      });
+    } catch (err) {
+      console.error("Failed to get feedback:", err);
+      setFeedbackError(err instanceof Error ? err.message : "Failed to get feedback");
+    } finally {
+      setFeedbackLoading(false);
+    }
+  };
 
   return (
     <div className={`session-log-card ${expanded ? "expanded" : ""}`}>
@@ -80,6 +156,9 @@ function SessionCard({ session, expanded, onToggle }: SessionCardProps) {
         <div className="session-log-info">
           <span className="session-date">{formattedDate}</span>
           <span className={`badge badge-${session.domain}`}>{session.domain}</span>
+          {parsedEvaluation && (
+            <span className="feedback-score">Score: {parsedEvaluation.overallScore}/10</span>
+          )}
         </div>
         <span className="session-expand-icon">{expanded ? "−" : "+"}</span>
       </div>
@@ -97,6 +176,32 @@ function SessionCard({ session, expanded, onToggle }: SessionCardProps) {
             </div>
           )}
 
+          {/* Feedback Section */}
+          <div className="session-feedback-section">
+            {!parsedEvaluation && session.recordingIds.length > 0 && (
+              <button
+                onClick={handleGetFeedback}
+                disabled={feedbackLoading || !apiKey}
+                className="btn btn-primary"
+              >
+                {feedbackLoading ? "Analyzing..." : "Get AI Feedback"}
+              </button>
+            )}
+
+            {feedbackError && <p className="error-message">{feedbackError}</p>}
+
+            {!apiKey && session.recordingIds.length > 0 && !parsedEvaluation && (
+              <p className="feedback-note">Add your OpenAI API key in Settings to get AI feedback</p>
+            )}
+
+            {parsedEvaluation && (
+              <FeedbackDisplay
+                evaluation={parsedEvaluation}
+                transcript={session.transcript || ""}
+              />
+            )}
+          </div>
+
           {(session.winNote || session.improveNote) && (
             <div className="session-notes-review">
               {session.winNote && (
@@ -113,6 +218,101 @@ function SessionCard({ session, expanded, onToggle }: SessionCardProps) {
               )}
             </div>
           )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Component to display the evaluation results
+function FeedbackDisplay({
+  evaluation,
+  transcript,
+}: {
+  evaluation: EvaluationResult;
+  transcript: string;
+}) {
+  const [showTranscript, setShowTranscript] = useState(false);
+
+  return (
+    <div className="feedback-display">
+      <div className="feedback-header">
+        <div className="feedback-score-large">
+          <span className="score-number">{evaluation.overallScore}</span>
+          <span className="score-label">/10</span>
+        </div>
+        <p className="feedback-summary">{evaluation.summary}</p>
+      </div>
+
+      {/* Strengths */}
+      {evaluation.strengths.length > 0 && (
+        <div className="feedback-section">
+          <h4>Strengths</h4>
+          <ul className="feedback-list strengths">
+            {evaluation.strengths.map((s, i) => (
+              <li key={i}>{s}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Improvements */}
+      {evaluation.improvements.length > 0 && (
+        <div className="feedback-section">
+          <h4>Areas to Improve</h4>
+          <ul className="feedback-list improvements">
+            {evaluation.improvements.map((s, i) => (
+              <li key={i}>{s}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Framework Adherence */}
+      {evaluation.frameworkAdherence.length > 0 && (
+        <div className="feedback-section">
+          <h4>Framework Adherence</h4>
+          {evaluation.frameworkAdherence.map((fa, i) => (
+            <div key={i} className="framework-score">
+              <div className="framework-score-header">
+                <span className="framework-name">{fa.framework}</span>
+                <span className="framework-score-value">{fa.score}/10</span>
+              </div>
+              <p>{fa.feedback}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Sentence Feedback */}
+      {evaluation.sentenceFeedback.length > 0 && (
+        <div className="feedback-section">
+          <h4>Sentence-by-Sentence Feedback</h4>
+          {evaluation.sentenceFeedback.map((sf, i) => (
+            <div key={i} className="sentence-feedback">
+              <p className="original-sentence">"{sf.sentence}"</p>
+              <p className="sentence-comment">{sf.feedback}</p>
+              {sf.suggestion && (
+                <p className="sentence-suggestion">
+                  <strong>Try:</strong> "{sf.suggestion}"
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Transcript Toggle */}
+      <button
+        onClick={() => setShowTranscript(!showTranscript)}
+        className="btn btn-link"
+      >
+        {showTranscript ? "Hide Transcript" : "Show Transcript"}
+      </button>
+
+      {showTranscript && (
+        <div className="transcript-display">
+          <p>{transcript}</p>
         </div>
       )}
     </div>
