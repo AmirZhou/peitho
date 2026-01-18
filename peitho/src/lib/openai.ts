@@ -493,6 +493,7 @@ Evaluate their delivery against the frameworks.`;
       ],
       temperature: 0.3, // Lower temperature for more consistent evaluations
       max_tokens: 1000,
+      response_format: { type: "json_object" },
     }),
   });
 
