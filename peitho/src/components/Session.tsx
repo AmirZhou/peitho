@@ -217,7 +217,7 @@ export function Session({ onClose }: SessionProps) {
                 disabled={saving}
                 className="btn btn-primary btn-large"
               >
-                {saving ? "Saving..." : "Save Session"}
+                {saving ? (uploadProgress || "Saving...") : "Save Session"}
               </button>
             </div>
           )}
