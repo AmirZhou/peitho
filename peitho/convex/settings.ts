@@ -1,7 +1,7 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 
-// Get settings
+// Get settings (without API key)
 export const get = query({
   args: {},
   handler: async (ctx) => {
@@ -12,11 +12,50 @@ export const get = query({
         defaultSessionMinutes: 90,
         streakCount: 0,
         lastSessionDate: null,
+        hasApiKey: false,
       };
     }
-    // Don't return the API key from the server
     const { openaiApiKey, ...rest } = settings;
     return { ...rest, hasApiKey: !!openaiApiKey };
+  },
+});
+
+// Get API key (for client-side use only)
+export const getApiKey = query({
+  args: {},
+  handler: async (ctx) => {
+    const settings = await ctx.db.query("settings").first();
+    return settings?.openaiApiKey ?? null;
+  },
+});
+
+// Save API key
+export const saveApiKey = mutation({
+  args: { apiKey: v.string() },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db.query("settings").first();
+
+    if (existing) {
+      await ctx.db.patch(existing._id, { openaiApiKey: args.apiKey });
+    } else {
+      await ctx.db.insert("settings", {
+        openaiApiKey: args.apiKey,
+        domains: ["coding", "running"],
+        defaultSessionMinutes: 90,
+        streakCount: 0,
+      });
+    }
+  },
+});
+
+// Clear API key
+export const clearApiKey = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const existing = await ctx.db.query("settings").first();
+    if (existing) {
+      await ctx.db.patch(existing._id, { openaiApiKey: undefined });
+    }
   },
 });
 
