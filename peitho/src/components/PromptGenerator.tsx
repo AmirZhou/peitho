@@ -22,30 +22,34 @@ type Mode = "domain_lock" | "guided" | "framework_lock" | "freestyle";
 export function PromptGenerator({ onPromptGenerated }: PromptGeneratorProps) {
   const [domain, setDomain] = useState<Domain>("coding");
   const [mode] = useState<Mode>("domain_lock");
-  const [apiKey, setApiKey] = useState<string>("");
+  const [apiKeyInput, setApiKeyInput] = useState<string>("");
   const [showApiKeyInput, setShowApiKeyInput] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [savingKey, setSavingKey] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [generatedPrompt, setGeneratedPrompt] = useState<GeneratedPrompt | null>(null);
 
   const frameworks = useQuery(api.prompts.getFrameworksForPrompt, { domain });
   const recentPrompts = useQuery(api.prompts.recentByDomain, { domain, limit: 10 });
+  const storedApiKey = useQuery(api.settings.getApiKey);
   const savePrompt = useMutation(api.prompts.save);
+  const saveApiKeyMutation = useMutation(api.settings.saveApiKey);
 
-  // Load API key from storage on mount
-  useEffect(() => {
-    const stored = getStoredApiKey();
-    if (stored) {
-      setApiKey(stored);
-    } else {
-      setShowApiKeyInput(true);
-    }
-  }, []);
+  // Show API key input if no key is stored
+  const hasApiKey = storedApiKey !== undefined && storedApiKey !== null;
 
-  const handleSaveApiKey = () => {
-    if (apiKey.trim()) {
-      setStoredApiKey(apiKey.trim());
-      setShowApiKeyInput(false);
+  const handleSaveApiKey = async () => {
+    if (apiKeyInput.trim()) {
+      setSavingKey(true);
+      try {
+        await saveApiKeyMutation({ apiKey: apiKeyInput.trim() });
+        setApiKeyInput("");
+        setShowApiKeyInput(false);
+      } catch (err) {
+        setError("Failed to save API key");
+      } finally {
+        setSavingKey(false);
+      }
     }
   };
 
