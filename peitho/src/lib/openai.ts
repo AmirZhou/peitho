@@ -191,3 +191,166 @@ Include [SECTION MARKERS] so they know which part of the framework they're deliv
   return content;
 }
 
+// ==================== Transcription & Evaluation ====================
+
+export interface TranscriptionResult {
+  text: string;
+  segments?: { start: number; end: number; text: string }[];
+}
+
+// Transcribe audio using Whisper
+export async function transcribeAudio(
+  apiKey: string,
+  audioBlob: Blob
+): Promise<TranscriptionResult> {
+  const formData = new FormData();
+
+  // Whisper expects a file, so we need to create one from the blob
+  const audioFile = new File([audioBlob], "recording.webm", {
+    type: audioBlob.type || "audio/webm",
+  });
+
+  formData.append("file", audioFile);
+  formData.append("model", "whisper-1");
+  formData.append("response_format", "verbose_json");
+
+  const response = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error?.message || "Failed to transcribe audio");
+  }
+
+  const data = await response.json();
+
+  return {
+    text: data.text,
+    segments: data.segments?.map((seg: { start: number; end: number; text: string }) => ({
+      start: seg.start,
+      end: seg.end,
+      text: seg.text,
+    })),
+  };
+}
+
+// Evaluation result interface
+export interface EvaluationResult {
+  overallScore: number; // 1-10
+  summary: string;
+  frameworkAdherence: {
+    framework: string;
+    score: number; // 1-10
+    feedback: string;
+  }[];
+  sentenceFeedback: {
+    sentence: string;
+    feedback: string;
+    suggestion?: string;
+  }[];
+  strengths: string[];
+  improvements: string[];
+}
+
+const EVALUATION_SYSTEM_PROMPT = `You are an expert speaking coach evaluating short-form content delivery.
+
+You evaluate based on:
+1. Framework adherence - Did they follow the framework structure?
+2. Clarity - Is the message clear and easy to follow?
+3. Punchiness - Is it engaging and concise?
+4. Flow - Does it sound natural when spoken?
+5. Specificity - Are examples concrete, not vague?
+
+Be constructive but direct. Focus on actionable improvements.
+
+Respond in JSON format:
+{
+  "overallScore": 7,
+  "summary": "Brief 1-2 sentence overall assessment",
+  "frameworkAdherence": [
+    {
+      "framework": "Framework Name",
+      "score": 8,
+      "feedback": "How well they followed this framework"
+    }
+  ],
+  "sentenceFeedback": [
+    {
+      "sentence": "The sentence from their transcript",
+      "feedback": "What could be improved",
+      "suggestion": "Alternative phrasing (optional)"
+    }
+  ],
+  "strengths": ["What they did well"],
+  "improvements": ["Specific things to work on"]
+}
+
+Only include sentenceFeedback for sentences that need improvement. Limit to 3-5 key sentences.`;
+
+export async function evaluateTranscript(
+  apiKey: string,
+  transcript: string,
+  topic: string,
+  frameworks: { name: string; pattern: string }[]
+): Promise<EvaluationResult> {
+  const frameworkContext = frameworks
+    .map((f) => `### ${f.name}\nPattern:\n${f.pattern}`)
+    .join("\n\n");
+
+  const userPrompt = `Topic they were speaking about: ${topic}
+
+Frameworks they should have followed:
+${frameworkContext}
+
+Their transcript:
+"${transcript}"
+
+Evaluate their delivery against the frameworks.`;
+
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: EVALUATION_SYSTEM_PROMPT },
+        { role: "user", content: userPrompt },
+      ],
+      temperature: 0.3, // Lower temperature for more consistent evaluations
+      max_tokens: 1000,
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error?.message || "Failed to evaluate transcript");
+  }
+
+  const data = await response.json();
+  const content = data.choices[0]?.message?.content;
+
+  if (!content) {
+    throw new Error("No content in response");
+  }
+
+  // Parse the JSON response
+  const parsed = JSON.parse(content);
+
+  return {
+    overallScore: parsed.overallScore,
+    summary: parsed.summary,
+    frameworkAdherence: parsed.frameworkAdherence || [],
+    sentenceFeedback: parsed.sentenceFeedback || [],
+    strengths: parsed.strengths || [],
+    improvements: parsed.improvements || [],
+  };
+}
+
