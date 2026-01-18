@@ -92,3 +92,84 @@ export const remove = mutation({
     await ctx.db.delete(args.id);
   },
 });
+
+// ============ Drill Sessions ============
+
+// Create a drill session (save a recording)
+export const createSession = mutation({
+  args: {
+    drillId: v.id("drills"),
+    recordingId: v.id("_storage"),
+    durationSeconds: v.number(),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db.insert("drillSessions", {
+      ...args,
+      completedAt: Date.now(),
+    });
+  },
+});
+
+// List all drill sessions
+export const listSessions = query({
+  args: {},
+  handler: async (ctx) => {
+    const sessions = await ctx.db
+      .query("drillSessions")
+      .order("desc")
+      .collect();
+
+    // Enrich with drill info
+    const enriched = await Promise.all(
+      sessions.map(async (session) => {
+        const drill = await ctx.db.get(session.drillId);
+        return {
+          ...session,
+          drill,
+        };
+      })
+    );
+
+    return enriched;
+  },
+});
+
+// List sessions for a specific drill
+export const listSessionsByDrill = query({
+  args: { drillId: v.id("drills") },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("drillSessions")
+      .withIndex("by_drill", (q) => q.eq("drillId", args.drillId))
+      .order("desc")
+      .collect();
+  },
+});
+
+// Get a drill session
+export const getSession = query({
+  args: { id: v.id("drillSessions") },
+  handler: async (ctx, args) => {
+    const session = await ctx.db.get(args.id);
+    if (!session) return null;
+
+    const drill = await ctx.db.get(session.drillId);
+    return { ...session, drill };
+  },
+});
+
+// Update drill session with transcript/evaluation
+export const updateSession = mutation({
+  args: {
+    id: v.id("drillSessions"),
+    transcript: v.optional(v.string()),
+    evaluation: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const { id, ...updates } = args;
+    const filtered = Object.fromEntries(
+      Object.entries(updates).filter(([_, v]) => v !== undefined)
+    );
+    await ctx.db.patch(id, filtered);
+  },
+});
