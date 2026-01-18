@@ -107,23 +107,35 @@ export function PromptGenerator({ onPromptGenerated }: PromptGeneratorProps) {
 
   return (
     <div className="prompt-generator">
-      {/* API Key Input */}
-      {showApiKeyInput && (
+      {/* API Key Input - show if no key stored or user wants to change */}
+      {(showApiKeyInput || !hasApiKey) && (
         <div className="api-key-section">
           <label htmlFor="apiKey">OpenAI API Key</label>
           <div className="api-key-input-row">
             <input
               id="apiKey"
               type="password"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
+              value={apiKeyInput}
+              onChange={(e) => setApiKeyInput(e.target.value)}
               placeholder="sk-..."
             />
-            <button onClick={handleSaveApiKey} className="btn btn-small">
-              Save
+            <button
+              onClick={handleSaveApiKey}
+              disabled={savingKey || !apiKeyInput.trim()}
+              className="btn btn-small"
+            >
+              {savingKey ? "Saving..." : "Save"}
             </button>
           </div>
-          <p className="api-key-note">Stored locally in your browser</p>
+          <p className="api-key-note">Stored securely in your Convex backend</p>
+          {hasApiKey && (
+            <button
+              className="btn-link"
+              onClick={() => setShowApiKeyInput(false)}
+            >
+              Cancel
+            </button>
+          )}
         </div>
       )}
 
