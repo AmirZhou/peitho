@@ -1276,6 +1276,21 @@ body {
   margin-bottom: 8px;
 }
 
+.drill-setup-step {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.drill-setup-step h2 {
+  margin-bottom: 8px;
+}
+
+.drill-start-hint {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin: 16px 0;
+}
+
 .drill-meta {
   margin: 16px 0;
 }
