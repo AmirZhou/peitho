@@ -97,7 +97,7 @@ export function Recorder({ onRecordingComplete, onRecordingStart, autoRequestPer
         )}
 
         {state === "ready" && (
-          <button onClick={startRecording} className="btn btn-record btn-large">
+          <button onClick={handleStartRecording} className="btn btn-record btn-large">
             <span className="record-icon" />
             Start Recording
           </button>
