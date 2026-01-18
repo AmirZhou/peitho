@@ -16,7 +16,7 @@ export function DrillPractice({ drillId, onClose }: DrillPracticeProps) {
   const [countdown, setCountdown] = useState(3);
   const [timeLeft, setTimeLeft] = useState(0);
   const [recording, setRecording] = useState<Blob | null>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Countdown effect
   useEffect(() => {
