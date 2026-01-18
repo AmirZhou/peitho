@@ -64,7 +64,12 @@ function App() {
             <h2>Today's Practice</h2>
             <span className="date">{today}</span>
           </div>
-          <button className="btn btn-large btn-primary">Start Session</button>
+          <button
+            className="btn btn-large btn-primary"
+            onClick={() => setShowSession(true)}
+          >
+            Start Session
+          </button>
         </section>
 
         {/* Quick Stats */}
