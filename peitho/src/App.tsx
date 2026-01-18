@@ -56,6 +56,17 @@ function App() {
 
   return (
     <div className="app">
+      {/* Background grid animation */}
+      <div className="app-background" />
+
+      {/* Desktop Sidebar */}
+      <Sidebar
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        onStartSession={() => setShowSession(true)}
+      />
+
+      {/* Mobile Header */}
       <header className="header">
         <h1>Peitho</h1>
         <p className="subtitle">The art of persuasion</p>
