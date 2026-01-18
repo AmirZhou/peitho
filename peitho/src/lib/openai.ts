@@ -125,20 +125,3 @@ Generate a practice prompt for a ${domain} topic.`;
   };
 }
 
-// Local storage helpers for API key
-const API_KEY_STORAGE_KEY = "peitho_openai_key";
-
-export function getStoredApiKey(): string | null {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem(API_KEY_STORAGE_KEY);
-}
-
-export function setStoredApiKey(key: string): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(API_KEY_STORAGE_KEY, key);
-}
-
-export function clearStoredApiKey(): void {
-  if (typeof window === "undefined") return;
-  localStorage.removeItem(API_KEY_STORAGE_KEY);
-}
