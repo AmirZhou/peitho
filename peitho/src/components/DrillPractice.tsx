@@ -4,6 +4,10 @@ import { api } from "../../convex/_generated/api";
 import { Recorder } from "./Recorder";
 import type { Id } from "../../convex/_generated/dataModel";
 
+interface UploadResult {
+  storageId: Id<"_storage">;
+}
+
 interface DrillPracticeProps {
   drillId: string;
   onClose: () => void;
