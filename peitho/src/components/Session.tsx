@@ -276,6 +276,10 @@ export function Session({ onClose }: SessionProps) {
           frameworks={prompt.frameworks}
           frameworkIds={prompt.frameworkIds}
           onClose={() => setShowScriptHelper(false)}
+          onScriptGenerated={(script) => {
+            setGeneratedScript(script);
+            setShowScriptPanel(true);
+          }}
         />
       )}
     </div>
