@@ -57,8 +57,33 @@ export function Session({ onClose }: SessionProps) {
     if (!prompt) return;
 
     setSaving(true);
+    const storageIds: Id<"_storage">[] = [];
 
     try {
+      // Upload each recording to Convex storage
+      for (let i = 0; i < recordings.length; i++) {
+        setUploadProgress(`Uploading video ${i + 1} of ${recordings.length}...`);
+        const blob = recordings[i];
+
+        // Get upload URL from Convex
+        const uploadUrl = await generateUploadUrl();
+
+        // Upload the blob
+        const response = await fetch(uploadUrl, {
+          method: "POST",
+          headers: { "Content-Type": blob.type },
+          body: blob,
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to upload recording ${i + 1}`);
+        }
+
+        const { storageId } = await response.json();
+        storageIds.push(storageId as Id<"_storage">);
+      }
+
+      setUploadProgress("Saving session...");
       const today = new Date().toISOString().split("T")[0];
 
       await createSession({
@@ -66,17 +91,19 @@ export function Session({ onClose }: SessionProps) {
         domain: prompt.domain as "coding" | "running",
         promptUsed: prompt.topic,
         frameworksUsed: prompt.frameworkIds as Id<"frameworks">[],
-        recordingIds: [], // TODO: Upload recordings to storage
+        recordingIds: storageIds,
         winNote,
         improveNote,
-        durationMinutes: 0, // TODO: Calculate actual duration
+        durationMinutes: 0,
       });
 
       setStep("complete");
     } catch (err) {
       console.error("Failed to save session:", err);
+      setUploadProgress("Error saving session");
     } finally {
       setSaving(false);
+      setUploadProgress("");
     }
   };
 
