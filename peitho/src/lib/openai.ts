@@ -378,8 +378,8 @@ Evaluate their delivery against the frameworks.`;
     throw new Error("No content in response");
   }
 
-  // Parse the JSON response
-  const parsed = JSON.parse(content);
+  // Parse the JSON response (strip markdown if present)
+  const parsed = JSON.parse(stripMarkdownCodeBlock(content));
 
   return {
     overallScore: parsed.overallScore,
