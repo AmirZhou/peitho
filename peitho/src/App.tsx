@@ -150,6 +150,9 @@ function App() {
           <span>Log</span>
         </button>
       </nav>
+
+      {/* Session Modal */}
+      {showSession && <Session onClose={() => setShowSession(false)} />}
     </div>
   );
 }
