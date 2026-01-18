@@ -88,35 +88,21 @@ function SessionCard({ session, expanded, onToggle }: SessionCardProps) {
     ? JSON.parse(session.evaluation)
     : null;
 
+  // Get recording URL for feedback
+  const firstRecordingUrl = useQuery(
+    api.sessions.getRecordingUrl,
+    session.recordingIds.length > 0 ? { storageId: session.recordingIds[0] } : "skip"
+  );
+
   const handleGetFeedback = async () => {
-    if (!apiKey || session.recordingIds.length === 0) return;
+    if (!apiKey || !firstRecordingUrl) return;
 
     setFeedbackLoading(true);
     setFeedbackError(null);
 
     try {
-      // Get the first recording URL
-      const recordingUrl = await fetch(
-        `https://cheery-ant-612.convex.cloud/api/storage/${session.recordingIds[0]}`
-      ).then(async (res) => {
-        // The storage URL redirects, get actual URL from Convex
-        return null; // We'll use the getRecordingUrl query instead
-      });
-
-      // Actually, let's use a simpler approach - fetch from the query
-      // We need to get the URL and then fetch the blob
-      const url = sessionWithFrameworks
-        ? await fetch("/api/getUrl?id=" + session.recordingIds[0])
-        : null;
-
-      // Simpler approach: use the existing URL from the page if visible
-      // For now, we'll need to fetch the blob from storage
-      // Let's build a helper that does this
-
-      // Get recording URL from Convex
-      const response = await fetch(
-        `https://cheery-ant-612.convex.cloud/api/storage/${session.recordingIds[0]}`
-      );
+      // Fetch the recording blob from the URL
+      const response = await fetch(firstRecordingUrl);
 
       if (!response.ok) {
         throw new Error("Failed to fetch recording");
