@@ -88,6 +88,7 @@ Generate a practice prompt for a ${domain} topic.`;
       ],
       temperature: 0.8,
       max_tokens: 300,
+      response_format: { type: "json_object" },
     }),
   });
 
@@ -103,8 +104,8 @@ Generate a practice prompt for a ${domain} topic.`;
     throw new Error("No content in response");
   }
 
-  // Parse the JSON response
-  const parsed = JSON.parse(content);
+  // Parse the JSON response (strip markdown if present)
+  const parsed = JSON.parse(stripMarkdownCodeBlock(content));
 
   // Map framework names back to IDs
   const frameworkIds = parsed.frameworks
