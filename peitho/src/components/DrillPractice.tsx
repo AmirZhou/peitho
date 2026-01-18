@@ -1,58 +1,88 @@
-import { useState, useEffect, useRef } from "react";
-import { useQuery } from "convex/react";
+import { useState, useEffect, useRef, useMemo } from "react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Recorder } from "./Recorder";
+import type { Id } from "../../convex/_generated/dataModel";
 
 interface DrillPracticeProps {
   drillId: string;
   onClose: () => void;
 }
 
-type DrillStep = "instructions" | "countdown" | "practice" | "complete";
+type DrillStep = "setup" | "recording" | "complete";
 
 export function DrillPractice({ drillId, onClose }: DrillPracticeProps) {
   const drill = useQuery(api.drills.get, { id: drillId as any });
-  const [step, setStep] = useState<DrillStep>("instructions");
-  const [countdown, setCountdown] = useState(3);
+  const [step, setStep] = useState<DrillStep>("setup");
   const [timeLeft, setTimeLeft] = useState(0);
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [recording, setRecording] = useState<Blob | null>(null);
+  const [saving, setSaving] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Countdown effect
-  useEffect(() => {
-    if (step === "countdown" && countdown > 0) {
-      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-      return () => clearTimeout(timer);
-    } else if (step === "countdown" && countdown === 0) {
-      setStep("practice");
-      setTimeLeft(drill?.durationSeconds ?? 60);
-    }
-  }, [step, countdown, drill?.durationSeconds]);
+  const generateUploadUrl = useMutation(api.sessions.generateUploadUrl);
 
-  // Practice timer effect
+  // Memoize recording URL
+  const recordingUrl = useMemo(() => {
+    return recording ? URL.createObjectURL(recording) : null;
+  }, [recording]);
+
+  // Timer effect - only runs when isTimerRunning is true
   useEffect(() => {
-    if (step === "practice" && timeLeft > 0) {
+    if (isTimerRunning && timeLeft > 0) {
       timerRef.current = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
       return () => {
         if (timerRef.current) clearTimeout(timerRef.current);
       };
-    } else if (step === "practice" && timeLeft === 0) {
-      setStep("complete");
+    } else if (isTimerRunning && timeLeft === 0) {
+      // Timer finished - don't auto-complete, let user stop manually
     }
-  }, [step, timeLeft]);
+  }, [isTimerRunning, timeLeft]);
 
-  const handleStart = () => {
-    setCountdown(3);
-    setStep("countdown");
+  const handleRecordingStart = () => {
+    setStep("recording");
+    setTimeLeft(drill?.durationSeconds ?? 60);
+    setIsTimerRunning(true);
   };
 
   const handleRecordingComplete = (blob: Blob) => {
     setRecording(blob);
+    setIsTimerRunning(false);
+    setStep("complete");
   };
 
   const handleTryAgain = () => {
     setRecording(null);
-    setStep("instructions");
+    setStep("setup");
+    setTimeLeft(0);
+    setIsTimerRunning(false);
+  };
+
+  const handleSave = async () => {
+    if (!recording) return;
+
+    setSaving(true);
+    try {
+      // Upload recording to Convex storage
+      const uploadUrl = await generateUploadUrl();
+      const response = await fetch(uploadUrl, {
+        method: "POST",
+        headers: { "Content-Type": recording.type },
+        body: recording,
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to upload recording");
+      }
+
+      // For now, just close - drill recordings aren't stored in sessions
+      // Could add a drillSessions table later if needed
+      onClose();
+    } catch (err) {
+      console.error("Failed to save drill recording:", err);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const formatTime = (seconds: number) => {
@@ -77,9 +107,9 @@ export function DrillPractice({ drillId, onClose }: DrillPracticeProps) {
       <div className="session-container">
         <button onClick={onClose} className="close-btn">&times;</button>
 
-        {/* Instructions Step */}
-        {step === "instructions" && (
-          <div className="drill-instructions-step">
+        {/* Setup Step - Show instructions and camera */}
+        {step === "setup" && (
+          <div className="drill-setup-step">
             <h2>{drill.name}</h2>
             <span className={`badge badge-${drill.type}`}>
               {drill.type.replace("_", " ")}
@@ -93,26 +123,21 @@ export function DrillPractice({ drillId, onClose }: DrillPracticeProps) {
               <pre>{drill.instructions}</pre>
             </div>
 
-            <button onClick={handleStart} className="btn btn-primary btn-large">
-              Start Drill
-            </button>
+            <p className="drill-start-hint">Enable camera, then click Start Recording when ready</p>
+
+            <Recorder
+              onRecordingStart={handleRecordingStart}
+              onRecordingComplete={handleRecordingComplete}
+              autoRequestPermission
+            />
           </div>
         )}
 
-        {/* Countdown Step */}
-        {step === "countdown" && (
-          <div className="drill-countdown">
-            <h2>Get Ready</h2>
-            <div className="countdown-number">{countdown}</div>
-            <p>{drill.name}</p>
-          </div>
-        )}
-
-        {/* Practice Step */}
-        {step === "practice" && (
+        {/* Recording Step */}
+        {step === "recording" && (
           <div className="drill-practice-step">
             <div className="drill-timer">
-              <span className={`time-display ${timeLeft <= 10 ? "warning" : ""}`}>
+              <span className={`time-display ${timeLeft <= 10 && timeLeft > 0 ? "warning" : ""}`}>
                 {formatTime(timeLeft)}
               </span>
             </div>
@@ -122,14 +147,10 @@ export function DrillPractice({ drillId, onClose }: DrillPracticeProps) {
               <p>{drill.instructions.split("\n")[0]}</p>
             </div>
 
-            <Recorder onRecordingComplete={handleRecordingComplete} />
-
-            <button
-              onClick={() => setStep("complete")}
-              className="btn btn-secondary"
-            >
-              Finish Early
-            </button>
+            <Recorder
+              onRecordingStart={handleRecordingStart}
+              onRecordingComplete={handleRecordingComplete}
+            />
           </div>
         )}
 
@@ -139,11 +160,11 @@ export function DrillPractice({ drillId, onClose }: DrillPracticeProps) {
             <div className="complete-icon">✓</div>
             <h2>Drill Complete!</h2>
 
-            {recording && (
+            {recordingUrl && (
               <div className="drill-recording-preview">
                 <h4>Your Take</h4>
                 <video
-                  src={URL.createObjectURL(recording)}
+                  src={recordingUrl}
                   controls
                   playsInline
                   className="recording-preview"
@@ -155,8 +176,12 @@ export function DrillPractice({ drillId, onClose }: DrillPracticeProps) {
               <button onClick={handleTryAgain} className="btn btn-secondary">
                 Try Again
               </button>
-              <button onClick={onClose} className="btn btn-primary">
-                Done
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="btn btn-primary"
+              >
+                {saving ? "Saving..." : "Save & Done"}
               </button>
             </div>
           </div>
