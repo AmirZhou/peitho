@@ -242,6 +242,16 @@ export function Session({ onClose }: SessionProps) {
           )}
         </div>
       </div>
+
+      {/* Script Helper Modal */}
+      {showScriptHelper && prompt && (
+        <ScriptHelper
+          topic={prompt.topic}
+          frameworks={prompt.frameworks}
+          frameworkIds={prompt.frameworkIds}
+          onClose={() => setShowScriptHelper(false)}
+        />
+      )}
     </div>
   );
 }
