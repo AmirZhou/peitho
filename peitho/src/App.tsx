@@ -5,6 +5,7 @@ import { Session } from "./components/Session";
 import { FrameworkDetail } from "./components/FrameworkDetail";
 import { SessionLog } from "./components/SessionLog";
 import { DrillPractice } from "./components/DrillPractice";
+import { Sidebar } from "./components/Sidebar";
 import "./App.css";
 
 type Tab = "practice" | "frameworks" | "drills" | "log";
