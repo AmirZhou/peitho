@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useRecorder, formatDuration } from "../hooks/useRecorder";
 
 interface RecorderProps {
@@ -21,6 +22,18 @@ export function Recorder({ onRecordingComplete, onRecordingStart, autoRequestPer
     resumeRecording,
     resetRecording,
   } = useRecorder({ video: true, audio: true });
+
+  // Auto-request permission if prop is set
+  useEffect(() => {
+    if (autoRequestPermission && state === "idle") {
+      requestPermission();
+    }
+  }, [autoRequestPermission, state, requestPermission]);
+
+  const handleStartRecording = () => {
+    startRecording();
+    onRecordingStart?.();
+  };
 
   const handleSave = () => {
     if (recordedBlob) {
