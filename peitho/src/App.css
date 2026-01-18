@@ -1697,19 +1697,6 @@ body {
   margin-top: 20px;
 }
 
-/* ==================== */
-/* Stat Card Clickable  */
-/* ==================== */
-
-.stat-card {
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.stat-card:hover {
-  background: var(--color-surface);
-  transform: translateY(-2px);
-}
 
 /* ==================== */
 /* Feedback Display     */
