@@ -10,9 +10,12 @@ interface SessionData {
   domain: "coding" | "running";
   promptUsed: string;
   recordingIds: Id<"_storage">[];
+  frameworksUsed: Id<"frameworks">[];
   winNote: string;
   improveNote: string;
   durationMinutes: number;
+  transcript?: string;
+  evaluation?: string;
 }
 
 export function SessionLog() {
