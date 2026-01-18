@@ -69,6 +69,9 @@ export default defineSchema({
     winNote: v.string(),
     improveNote: v.string(),
     durationMinutes: v.number(),
+    // AI feedback (on-demand)
+    transcript: v.optional(v.string()),
+    evaluation: v.optional(v.string()), // JSON string of EvaluationResult
   })
     .index("by_date", ["date"])
     .index("by_domain", ["domain"]),
