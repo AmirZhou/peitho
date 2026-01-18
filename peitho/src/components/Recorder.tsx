@@ -2,9 +2,11 @@ import { useRecorder, formatDuration } from "../hooks/useRecorder";
 
 interface RecorderProps {
   onRecordingComplete?: (blob: Blob) => void;
+  onRecordingStart?: () => void;
+  autoRequestPermission?: boolean;
 }
 
-export function Recorder({ onRecordingComplete }: RecorderProps) {
+export function Recorder({ onRecordingComplete, onRecordingStart, autoRequestPermission }: RecorderProps) {
   const {
     state,
     error,
