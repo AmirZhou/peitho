@@ -10,8 +10,10 @@
 
 import type * as drills from "../drills.js";
 import type * as frameworks from "../frameworks.js";
+import type * as prompts from "../prompts.js";
 import type * as seed from "../seed.js";
 import type * as sessions from "../sessions.js";
+import type * as settings from "../settings.js";
 
 import type {
   ApiFromModules,
@@ -22,8 +24,10 @@ import type {
 declare const fullApi: ApiFromModules<{
   drills: typeof drills;
   frameworks: typeof frameworks;
+  prompts: typeof prompts;
   seed: typeof seed;
   sessions: typeof sessions;
+  settings: typeof settings;
 }>;
 
 /**
