@@ -1,3 +1,13 @@
+// Helper to strip markdown code blocks from JSON responses
+function stripMarkdownCodeBlock(content: string): string {
+  // Remove ```json ... ``` or ``` ... ``` wrappers
+  const match = content.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (match) {
+    return match[1].trim();
+  }
+  return content.trim();
+}
+
 interface Framework {
   _id: string;
   name: string;
