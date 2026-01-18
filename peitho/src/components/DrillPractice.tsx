@@ -25,6 +25,7 @@ export function DrillPractice({ drillId, onClose }: DrillPracticeProps) {
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const generateUploadUrl = useMutation(api.sessions.generateUploadUrl);
+  const createDrillSession = useMutation(api.drills.createSession);
 
   // Memoize recording URL
   const recordingUrl = useMemo(() => {
