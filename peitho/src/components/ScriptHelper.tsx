@@ -1,18 +1,19 @@
 import { useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { generateScript } from "../lib/openai";
+import { generateScript, type StructuredScript } from "../lib/openai";
 
 interface ScriptHelperProps {
   topic: string;
   frameworks: string[];
   frameworkIds: string[];
   onClose: () => void;
+  onScriptGenerated?: (script: StructuredScript) => void;
 }
 
-export function ScriptHelper({ topic, frameworks, frameworkIds, onClose }: ScriptHelperProps) {
+export function ScriptHelper({ topic, frameworks, frameworkIds, onClose, onScriptGenerated }: ScriptHelperProps) {
   const [customTopic, setCustomTopic] = useState(topic);
-  const [script, setScript] = useState<string | null>(null);
+  const [script, setScript] = useState<StructuredScript | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -45,10 +46,18 @@ export function ScriptHelper({ topic, frameworks, frameworkIds, onClose }: Scrip
         frameworks: selectedFrameworks,
       });
       setScript(result);
+      onScriptGenerated?.(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to generate script");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleUseScript = () => {
+    if (script) {
+      onScriptGenerated?.(script);
+      onClose();
     }
   };
 
@@ -105,12 +114,25 @@ export function ScriptHelper({ topic, frameworks, frameworkIds, onClose }: Scrip
         {script && (
           <div className="generated-script">
             <h3>Your Script</h3>
-            <div className="script-content">
-              <pre>{script}</pre>
+            <div className="script-sections-preview">
+              {script.sections.map((section, index) => (
+                <div key={index} className="script-section-preview">
+                  <h4>{section.label}</h4>
+                  <p>{section.content}</p>
+                  <div className="section-keywords">
+                    {section.keywords.map((kw, i) => (
+                      <span key={i} className="keyword-tag">{kw}</span>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
             <p className="script-note">
-              Use this as a starting point. Make it your own!
+              Use this as a starting point. Hint levels available during recording!
             </p>
+            <button onClick={handleUseScript} className="btn btn-primary">
+              Use This Script
+            </button>
           </div>
         )}
       </div>
