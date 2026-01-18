@@ -194,7 +194,7 @@ export function PromptGenerator({ onPromptGenerated }: PromptGeneratorProps) {
       )}
 
       {/* Settings Link */}
-      {!showApiKeyInput && apiKey && (
+      {!showApiKeyInput && hasApiKey && (
         <button
           className="btn-link"
           onClick={() => setShowApiKeyInput(true)}
