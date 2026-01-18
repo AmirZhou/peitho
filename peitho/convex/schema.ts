@@ -31,6 +31,18 @@ export default defineSchema({
     frameworkIds: v.array(v.id("frameworks")),
   }).index("by_type", ["type"]),
 
+  // Drill practice sessions (recordings of drill attempts)
+  drillSessions: defineTable({
+    drillId: v.id("drills"),
+    recordingId: v.id("_storage"),
+    durationSeconds: v.number(),
+    completedAt: v.number(), // timestamp
+    transcript: v.optional(v.string()),
+    evaluation: v.optional(v.string()),
+  })
+    .index("by_drill", ["drillId"])
+    .index("by_date", ["completedAt"]),
+
   // Style examples - clips, writing samples, vocabulary
   styleExamples: defineTable({
     type: v.union(
