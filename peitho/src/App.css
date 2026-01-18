@@ -45,6 +45,53 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* ==================== */
+/* Background Grid      */
+/* ==================== */
+
+.app-background {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+
+  /* Grid pattern */
+  background-image:
+    linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+
+  /* Slow drift animation */
+  animation: grid-drift 30s linear infinite;
+
+  /* Vignette - fade at edges */
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 70%);
+}
+
+@keyframes grid-drift {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 60px; }
+}
+
+/* Soft glow accent - optional warmth */
+.app-background::after {
+  content: '';
+  position: absolute;
+  top: 10%;
+  right: 15%;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, transparent 70%);
+  animation: glow-drift 60s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes glow-drift {
+  0%, 100% { transform: translate(0, 0); opacity: 0.6; }
+  50% { transform: translate(-50px, 30px); opacity: 0.8; }
+}
+
 .app {
   min-height: 100vh;
   display: flex;
