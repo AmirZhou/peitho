@@ -25,6 +25,7 @@ function App() {
   const [seeding, setSeeding] = useState(false);
   const [seedResult, setSeedResult] = useState<string | null>(null);
   const [showSession, setShowSession] = useState(false);
+  const [selectedFramework, setSelectedFramework] = useState<Framework | null>(null);
 
   const handleSeed = async () => {
     setSeeding(true);
