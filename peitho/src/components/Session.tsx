@@ -26,8 +26,15 @@ export function Session({ onClose }: SessionProps) {
   const [winNote, setWinNote] = useState("");
   const [improveNote, setImproveNote] = useState("");
   const [saving, setSaving] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState("");
 
   const createSession = useMutation(api.sessions.create);
+  const generateUploadUrl = useMutation(api.sessions.generateUploadUrl);
+
+  // Memoize blob URLs to prevent re-creation on every render
+  const recordingUrls = useMemo(() => {
+    return recordings.map((blob) => URL.createObjectURL(blob));
+  }, [recordings]);
 
   const handlePromptGenerated = (generatedPrompt: GeneratedPrompt) => {
     setPrompt(generatedPrompt);
