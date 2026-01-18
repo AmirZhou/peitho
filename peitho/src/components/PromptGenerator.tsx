@@ -54,7 +54,7 @@ export function PromptGenerator({ onPromptGenerated }: PromptGeneratorProps) {
   };
 
   const handleGenerate = async () => {
-    if (!apiKey) {
+    if (!hasApiKey) {
       setShowApiKeyInput(true);
       return;
     }
@@ -64,12 +64,18 @@ export function PromptGenerator({ onPromptGenerated }: PromptGeneratorProps) {
       return;
     }
 
+    if (!storedApiKey) {
+      setError("API key not found");
+      setShowApiKeyInput(true);
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
     try {
       const result = await generatePrompt({
-        apiKey,
+        apiKey: storedApiKey,
         domain,
         frameworks,
         recentPrompts: recentPrompts?.map((p) => p.prompt) || [],
