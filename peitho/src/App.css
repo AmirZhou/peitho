@@ -1126,3 +1126,284 @@ body {
   margin-top: 12px;
   font-style: italic;
 }
+
+/* ==================== */
+/* Session Log          */
+/* ==================== */
+
+.session-log-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.session-log-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 16px;
+  transition: all 0.2s ease;
+}
+
+.session-log-card.expanded {
+  border-color: var(--color-primary);
+}
+
+.session-log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+
+.session-log-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.session-date {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.session-expand-icon {
+  font-size: 20px;
+  color: var(--color-text-muted);
+  width: 24px;
+  text-align: center;
+}
+
+.session-prompt {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin-top: 8px;
+  line-height: 1.4;
+}
+
+.session-log-details {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border);
+}
+
+.session-recordings h4 {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-muted);
+  margin-bottom: 12px;
+}
+
+.recording-player {
+  margin-bottom: 12px;
+}
+
+.recording-video {
+  width: 100%;
+  border-radius: var(--radius);
+  background: #000;
+}
+
+.recording-loading {
+  padding: 20px;
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+
+.session-notes-review {
+  margin-top: 16px;
+}
+
+.note-item {
+  margin-bottom: 12px;
+}
+
+.note-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-muted);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.note-item p {
+  font-size: 14px;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--color-text-muted);
+  padding: 40px 20px;
+}
+
+.loading {
+  text-align: center;
+  color: var(--color-text-muted);
+  padding: 20px;
+}
+
+/* ==================== */
+/* Drill Practice       */
+/* ==================== */
+
+.drill-item.clickable {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.drill-item.clickable:hover {
+  background: var(--color-surface);
+  transform: translateY(-2px);
+}
+
+.drill-instructions {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin: 8px 0;
+  line-height: 1.4;
+}
+
+.drill-instructions-step {
+  text-align: center;
+}
+
+.drill-instructions-step h2 {
+  margin-bottom: 8px;
+}
+
+.drill-meta {
+  margin: 16px 0;
+}
+
+.drill-duration {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.drill-instructions-full {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin: 20px 0;
+  text-align: left;
+}
+
+.drill-instructions-full pre {
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  margin: 0;
+}
+
+.drill-countdown {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.drill-countdown h2 {
+  margin-bottom: 20px;
+  color: var(--color-text-muted);
+}
+
+.countdown-number {
+  font-size: 120px;
+  font-weight: 700;
+  color: var(--color-primary);
+  line-height: 1;
+}
+
+.drill-countdown p {
+  margin-top: 20px;
+  color: var(--color-text-muted);
+}
+
+.drill-practice-step {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.drill-timer {
+  text-align: center;
+  padding: 16px;
+}
+
+.time-display {
+  font-size: 48px;
+  font-weight: 700;
+  font-family: monospace;
+}
+
+.time-display.warning {
+  color: var(--color-error);
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.drill-prompt-reminder {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 12px;
+  text-align: center;
+}
+
+.drill-prompt-reminder h3 {
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.drill-prompt-reminder p {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.drill-complete-step {
+  text-align: center;
+}
+
+.drill-recording-preview {
+  margin: 20px 0;
+  text-align: left;
+}
+
+.drill-recording-preview h4 {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-muted);
+  margin-bottom: 12px;
+}
+
+.drill-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+/* ==================== */
+/* Stat Card Clickable  */
+/* ==================== */
+
+.stat-card {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.stat-card:hover {
+  background: var(--color-surface);
+  transform: translateY(-2px);
+}
