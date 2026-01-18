@@ -28,6 +28,7 @@ export function Session({ onClose }: SessionProps) {
   const [improveNote, setImproveNote] = useState("");
   const [saving, setSaving] = useState(false);
   const [uploadProgress, setUploadProgress] = useState("");
+  const [showScriptHelper, setShowScriptHelper] = useState(false);
 
   const createSession = useMutation(api.sessions.create);
   const generateUploadUrl = useMutation(api.sessions.generateUploadUrl);
