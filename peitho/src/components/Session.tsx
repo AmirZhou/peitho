@@ -172,10 +172,10 @@ export function Session({ onClose }: SessionProps) {
 
               <div className="recordings-list">
                 <h3>Your Takes ({recordings.length})</h3>
-                {recordings.map((blob, index) => (
+                {recordingUrls.map((url, index) => (
                   <div key={index} className="recording-item">
                     <video
-                      src={URL.createObjectURL(blob)}
+                      src={url}
                       controls
                       playsInline
                       className="recording-preview"
