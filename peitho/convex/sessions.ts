@@ -78,6 +78,38 @@ export const update = mutation({
   },
 });
 
+// Save transcript and evaluation for a session
+export const saveFeedback = mutation({
+  args: {
+    id: v.id("sessions"),
+    transcript: v.string(),
+    evaluation: v.string(), // JSON string
+  },
+  handler: async (ctx, args) => {
+    const { id, transcript, evaluation } = args;
+    await ctx.db.patch(id, { transcript, evaluation });
+  },
+});
+
+// Get session with framework details (for evaluation)
+export const getWithFrameworks = query({
+  args: { id: v.id("sessions") },
+  handler: async (ctx, args) => {
+    const session = await ctx.db.get(args.id);
+    if (!session) return null;
+
+    // Fetch framework details
+    const frameworks = await Promise.all(
+      session.frameworksUsed.map((fid) => ctx.db.get(fid))
+    );
+
+    return {
+      ...session,
+      frameworks: frameworks.filter(Boolean),
+    };
+  },
+});
+
 // Get streak count
 export const getStreak = query({
   args: {},
