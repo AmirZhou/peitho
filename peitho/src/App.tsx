@@ -105,9 +105,14 @@ function App() {
         {frameworks && frameworks.length > 0 && (
           <section className="card">
             <h2>Frameworks</h2>
+            <p className="section-hint">Tap a framework to see examples and patterns</p>
             <div className="framework-list">
               {frameworks.map((f) => (
-                <div key={f._id} className="framework-item">
+                <div
+                  key={f._id}
+                  className="framework-item clickable"
+                  onClick={() => setSelectedFramework(f as Framework)}
+                >
                   <div className="framework-header">
                     <h3>{f.name}</h3>
                     <span className={`badge badge-${f.domain}`}>{f.domain}</span>
