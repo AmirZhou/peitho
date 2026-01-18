@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
-import { transcribeAudio, evaluateTranscript, EvaluationResult } from "../lib/openai";
+import { transcribeAudio, evaluateTranscript } from "../lib/openai";
+import type { EvaluationResult } from "../lib/openai";
 
 interface SessionData {
   _id: Id<"sessions">;
