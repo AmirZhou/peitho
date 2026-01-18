@@ -221,7 +221,7 @@ Each section should map to a step in the framework.`;
     throw new Error("No content in response");
   }
 
-  const parsed = JSON.parse(content);
+  const parsed = JSON.parse(stripMarkdownCodeBlock(content));
 
   return {
     sections: parsed.sections || [],
