@@ -3,12 +3,6 @@ import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { generateScript } from "../lib/openai";
 
-interface Framework {
-  _id: string;
-  name: string;
-  pattern: string;
-}
-
 interface ScriptHelperProps {
   topic: string;
   frameworks: string[];
