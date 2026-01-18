@@ -31,6 +31,8 @@ export function Session({ onClose }: SessionProps) {
   const [saving, setSaving] = useState(false);
   const [uploadProgress, setUploadProgress] = useState("");
   const [showScriptHelper, setShowScriptHelper] = useState(false);
+  const [generatedScript, setGeneratedScript] = useState<StructuredScript | null>(null);
+  const [showScriptPanel, setShowScriptPanel] = useState(false);
 
   const createSession = useMutation(api.sessions.create);
   const generateUploadUrl = useMutation(api.sessions.generateUploadUrl);
