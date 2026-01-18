@@ -1,6 +1,7 @@
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { useState } from "react";
+import { Session } from "./components/Session";
 import "./App.css";
 
 function App() {
@@ -11,6 +12,7 @@ function App() {
 
   const [seeding, setSeeding] = useState(false);
   const [seedResult, setSeedResult] = useState<string | null>(null);
+  const [showSession, setShowSession] = useState(false);
 
   const handleSeed = async () => {
     setSeeding(true);
