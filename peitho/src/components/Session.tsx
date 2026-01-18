@@ -161,6 +161,12 @@ export function Session({ onClose }: SessionProps) {
                       </span>
                     ))}
                   </div>
+                  <button
+                    onClick={() => setShowScriptHelper(true)}
+                    className="btn btn-help"
+                  >
+                    Need Help? Generate Script
+                  </button>
                 </div>
               )}
 
