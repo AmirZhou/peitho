@@ -154,27 +154,49 @@ export function Session({ onClose }: SessionProps) {
           )}
 
           {step === "record" && (
-            <div className="step-record">
-              {prompt && (
-                <div className="prompt-reminder">
-                  <p className="prompt-topic-small">{prompt.topic}</p>
-                  <div className="prompt-frameworks-small">
-                    {prompt.frameworks.map((f) => (
-                      <span key={f} className="badge badge-small">
-                        {f}
-                      </span>
-                    ))}
+            <div className={`step-record ${showScriptPanel && generatedScript ? "with-script-panel" : ""}`}>
+              <div className="record-main">
+                {prompt && (
+                  <div className="prompt-reminder">
+                    <p className="prompt-topic-small">{prompt.topic}</p>
+                    <div className="prompt-frameworks-small">
+                      {prompt.frameworks.map((f) => (
+                        <span key={f} className="badge badge-small">
+                          {f}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="prompt-actions">
+                      {!generatedScript && (
+                        <button
+                          onClick={() => setShowScriptHelper(true)}
+                          className="btn btn-help"
+                        >
+                          Generate Script
+                        </button>
+                      )}
+                      {generatedScript && (
+                        <button
+                          onClick={() => setShowScriptPanel(!showScriptPanel)}
+                          className={`btn btn-help ${showScriptPanel ? "active" : ""}`}
+                        >
+                          {showScriptPanel ? "Hide Script" : "Show Script"}
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  <button
-                    onClick={() => setShowScriptHelper(true)}
-                    className="btn btn-help"
-                  >
-                    Need Help? Generate Script
-                  </button>
-                </div>
-              )}
+                )}
 
-              <Recorder onRecordingComplete={handleRecordingComplete} />
+                <Recorder onRecordingComplete={handleRecordingComplete} />
+              </div>
+
+              {/* Script Panel - slides in from right */}
+              {showScriptPanel && generatedScript && (
+                <ScriptPanel
+                  sections={generatedScript.sections}
+                  onClose={() => setShowScriptPanel(false)}
+                />
+              )}
             </div>
           )}
 
