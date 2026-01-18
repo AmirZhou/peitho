@@ -361,3 +361,484 @@ body {
     padding-bottom: 0;
   }
 }
+
+/* ==================== */
+/* Session Modal        */
+/* ==================== */
+
+.session-modal {
+  position: fixed;
+  inset: 0;
+  background: var(--color-bg);
+  z-index: 100;
+  overflow-y: auto;
+}
+
+.session-container {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.session-header {
+  position: sticky;
+  top: 0;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  z-index: 10;
+}
+
+.close-btn {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  color: var(--color-text);
+  font-size: 28px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+}
+
+.close-btn:hover {
+  background: var(--color-surface-hover);
+}
+
+.session-steps {
+  display: flex;
+  gap: 8px;
+  flex: 1;
+}
+
+.step {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  padding: 6px 12px;
+  border-radius: 16px;
+  background: var(--color-bg);
+}
+
+.step.active {
+  background: var(--color-primary);
+  color: white;
+}
+
+.step.done {
+  background: rgba(34, 197, 94, 0.2);
+  color: var(--color-success);
+}
+
+.session-content {
+  flex: 1;
+  padding: 24px 16px;
+  max-width: 600px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.session-content h2 {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+/* ==================== */
+/* Prompt Generator     */
+/* ==================== */
+
+.prompt-generator {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.api-key-section {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.api-key-section label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.api-key-input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.api-key-input-row input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: 14px;
+}
+
+.api-key-input-row input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.btn-small {
+  padding: 10px 16px;
+  font-size: 14px;
+}
+
+.api-key-note {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin-top: 8px;
+}
+
+.domain-selector {
+  display: flex;
+  gap: 12px;
+}
+
+.domain-btn {
+  flex: 1;
+  padding: 16px;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--color-text);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.domain-btn:hover {
+  border-color: var(--color-text-muted);
+}
+
+.domain-btn.active {
+  border-color: var(--color-primary);
+  background: rgba(99, 102, 241, 0.1);
+}
+
+.error-message {
+  color: #ef4444;
+  font-size: 14px;
+  padding: 12px;
+  background: rgba(239, 68, 68, 0.1);
+  border-radius: var(--radius-sm);
+}
+
+.generated-prompt {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.generated-prompt h3 {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-muted);
+  margin-bottom: 4px;
+}
+
+.prompt-topic p {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.framework-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.hook-text {
+  font-size: 16px;
+  font-style: italic;
+  color: var(--color-primary);
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 8px;
+}
+
+.btn-link:hover {
+  color: var(--color-text);
+}
+
+/* ==================== */
+/* Recorder             */
+/* ==================== */
+
+.recorder {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.video-container {
+  position: relative;
+  aspect-ratio: 9 / 16;
+  max-height: 60vh;
+  background: #000;
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin: 0 auto;
+  width: 100%;
+  max-width: 340px;
+}
+
+.video-preview,
+.video-player {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.video-preview {
+  transform: scaleX(-1);
+}
+
+.recording-indicator,
+.paused-indicator {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 8px 12px;
+  border-radius: 20px;
+}
+
+.recording-dot {
+  width: 12px;
+  height: 12px;
+  background: #ef4444;
+  border-radius: 50%;
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.recording-time {
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.paused-indicator {
+  background: rgba(245, 158, 11, 0.8);
+}
+
+.recorder-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.recording-buttons,
+.post-recording-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.recording-buttons .btn,
+.post-recording-buttons .btn {
+  flex: 1;
+}
+
+.btn-secondary {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--color-surface-hover);
+}
+
+.btn-record {
+  background: #ef4444;
+  color: white;
+}
+
+.btn-record:hover:not(:disabled) {
+  background: #dc2626;
+}
+
+.record-icon {
+  width: 12px;
+  height: 12px;
+  background: white;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.btn-stop {
+  background: #ef4444;
+  color: white;
+}
+
+.btn-stop:hover:not(:disabled) {
+  background: #dc2626;
+}
+
+.final-duration {
+  text-align: center;
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+/* ==================== */
+/* Review Step          */
+/* ==================== */
+
+.step-review {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.recordings-list h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.recording-item {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.recording-preview {
+  width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+  background: #000;
+}
+
+.session-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.note-field label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.note-field textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.note-field textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.note-field textarea::placeholder {
+  color: var(--color-text-muted);
+}
+
+/* ==================== */
+/* Complete Step        */
+/* ==================== */
+
+.step-complete {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 48px 24px;
+  gap: 16px;
+}
+
+.complete-icon {
+  width: 80px;
+  height: 80px;
+  background: rgba(34, 197, 94, 0.2);
+  color: var(--color-success);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  margin-bottom: 16px;
+}
+
+.step-complete p {
+  color: var(--color-text-muted);
+  margin-bottom: 24px;
+}
+
+/* ==================== */
+/* Prompt Reminder      */
+/* ==================== */
+
+.prompt-reminder {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.prompt-topic-small {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.prompt-frameworks-small {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.badge-small {
+  padding: 3px 6px;
+  font-size: 9px;
+}
