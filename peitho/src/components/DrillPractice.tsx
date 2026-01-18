@@ -64,7 +64,7 @@ export function DrillPractice({ drillId, onClose }: DrillPracticeProps) {
   };
 
   const handleSave = async () => {
-    if (!recording) return;
+    if (!recording || !drill) return;
 
     setSaving(true);
     try {
@@ -80,8 +80,16 @@ export function DrillPractice({ drillId, onClose }: DrillPracticeProps) {
         throw new Error("Failed to upload recording");
       }
 
-      // For now, just close - drill recordings aren't stored in sessions
-      // Could add a drillSessions table later if needed
+      // Get the storage ID from the response
+      const result: UploadResult = await response.json();
+
+      // Save the drill session to the database
+      await createDrillSession({
+        drillId: drillId as Id<"drills">,
+        recordingId: result.storageId,
+        durationSeconds: drill.durationSeconds - timeLeft,
+      });
+
       onClose();
     } catch (err) {
       console.error("Failed to save drill recording:", err);
