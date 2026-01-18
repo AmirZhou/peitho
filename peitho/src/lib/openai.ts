@@ -132,19 +132,40 @@ interface GenerateScriptOptions {
   frameworks: { name: string; pattern: string }[];
 }
 
+export interface ScriptSection {
+  label: string;
+  content: string;
+  keywords: string[];
+}
+
+export interface StructuredScript {
+  sections: ScriptSection[];
+}
+
 const SCRIPT_SYSTEM_PROMPT = `You are a speaking coach helping someone practice short-form content delivery.
 
-Your job is to generate a SCRIPT they can read/practice with. The script MUST:
+Your job is to generate a STRUCTURED SCRIPT they can read/practice with. The script MUST:
 1. Follow the exact structure of the provided framework patterns
 2. Be specific to their topic
-3. Include clear markers for each framework step (e.g., [PUNCH], [EXPAND], etc.)
-4. Be natural and conversational - something they'd actually say
-5. Be 60-90 seconds when spoken (roughly 150-200 words)
+3. Be natural and conversational - something they'd actually say
+4. Be 60-90 seconds when spoken (roughly 150-200 words total)
 
-Format the script with clear section headers matching the framework steps.
+For each section, extract 3-5 KEYWORDS that are essential to the message. These will be used for hint levels during practice.
+
+Respond in JSON format:
+{
+  "sections": [
+    {
+      "label": "Hook (Contrarian Opening)",
+      "content": "The full text for this section...",
+      "keywords": ["keyword1", "keyword2", "keyword3"]
+    }
+  ]
+}
+
 Make it punchy, opinionated, and engaging - not generic or corporate.`;
 
-export async function generateScript(options: GenerateScriptOptions): Promise<string> {
+export async function generateScript(options: GenerateScriptOptions): Promise<StructuredScript> {
   const { apiKey, topic, frameworks } = options;
 
   const frameworkPatterns = frameworks
@@ -156,8 +177,8 @@ export async function generateScript(options: GenerateScriptOptions): Promise<st
 Frameworks to use (MUST follow these patterns exactly):
 ${frameworkPatterns}
 
-Generate a practice script that follows these framework patterns for the given topic.
-Include [SECTION MARKERS] so they know which part of the framework they're delivering.`;
+Generate a structured practice script that follows these framework patterns for the given topic.
+Each section should map to a step in the framework.`;
 
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
@@ -172,7 +193,8 @@ Include [SECTION MARKERS] so they know which part of the framework they're deliv
         { role: "user", content: userPrompt },
       ],
       temperature: 0.7,
-      max_tokens: 600,
+      max_tokens: 800,
+      response_format: { type: "json_object" },
     }),
   });
 
@@ -188,7 +210,11 @@ Include [SECTION MARKERS] so they know which part of the framework they're deliv
     throw new Error("No content in response");
   }
 
-  return content;
+  const parsed = JSON.parse(content);
+
+  return {
+    sections: parsed.sections || [],
+  };
 }
 
 // ==================== Transcription & Evaluation ====================
