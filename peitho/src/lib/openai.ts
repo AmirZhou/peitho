@@ -125,3 +125,69 @@ Generate a practice prompt for a ${domain} topic.`;
   };
 }
 
+// Script generation for guided practice
+interface GenerateScriptOptions {
+  apiKey: string;
+  topic: string;
+  frameworks: { name: string; pattern: string }[];
+}
+
+const SCRIPT_SYSTEM_PROMPT = `You are a speaking coach helping someone practice short-form content delivery.
+
+Your job is to generate a SCRIPT they can read/practice with. The script MUST:
+1. Follow the exact structure of the provided framework patterns
+2. Be specific to their topic
+3. Include clear markers for each framework step (e.g., [PUNCH], [EXPAND], etc.)
+4. Be natural and conversational - something they'd actually say
+5. Be 60-90 seconds when spoken (roughly 150-200 words)
+
+Format the script with clear section headers matching the framework steps.
+Make it punchy, opinionated, and engaging - not generic or corporate.`;
+
+export async function generateScript(options: GenerateScriptOptions): Promise<string> {
+  const { apiKey, topic, frameworks } = options;
+
+  const frameworkPatterns = frameworks
+    .map((f) => `### ${f.name}\n${f.pattern}`)
+    .join("\n\n");
+
+  const userPrompt = `Topic: ${topic}
+
+Frameworks to use (MUST follow these patterns exactly):
+${frameworkPatterns}
+
+Generate a practice script that follows these framework patterns for the given topic.
+Include [SECTION MARKERS] so they know which part of the framework they're delivering.`;
+
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: SCRIPT_SYSTEM_PROMPT },
+        { role: "user", content: userPrompt },
+      ],
+      temperature: 0.7,
+      max_tokens: 600,
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error?.message || "Failed to generate script");
+  }
+
+  const data = await response.json();
+  const content = data.choices[0]?.message?.content;
+
+  if (!content) {
+    throw new Error("No content in response");
+  }
+
+  return content;
+}
+
